@@ -1,0 +1,8 @@
+---
+alwaysApply: true
+---
+
+All new Ul must use SwiftUI.
+Follow the MVVM patter with ObservableObject.
+Prefer structs over classes for data models.
+Use lazy var for expensive computed properties in classes.

@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "Jaden_K_runner_on_the_Santa_Monica_beach_running_path_ocean_and_04c20330-f010-4b65-b97f-cdc54e072de9.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

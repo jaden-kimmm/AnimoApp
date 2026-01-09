@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "Jaden_K_runner_running_through_the_downtown_Los_Angeles_Arts_Di_761ffabc-bc3d-4032-b67c-eb9c10f91a40.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

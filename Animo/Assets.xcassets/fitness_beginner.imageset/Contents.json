@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "Jaden_K_A_side_profile_shot_of_a_runner_with_perfect_form_mid_ae44a1ca-fc6d-4124-85dd-2d07bb7e3b48_2.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

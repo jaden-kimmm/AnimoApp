@@ -1,6 +1,7 @@
 {
   "images" : [
     {
+      "filename" : "Frame 129.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
@@ -12,6 +13,7 @@
           "value" : "dark"
         }
       ],
+      "filename" : "Frame 130.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"

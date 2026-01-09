@@ -1,0 +1,21 @@
+{
+  "images" : [
+    {
+      "filename" : "Jaden_K_A_wide_shot_of_a_runner_silhouettes_against_a_dark_ra_3f031e2e-6d8d-4a3a-aa93-1ba2f78143c9_3.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
