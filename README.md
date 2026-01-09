@@ -23,12 +23,6 @@
 - iOS 17.0+
 - Xcode 15.0+
 
-## Setup
-
-1. Clone the repository.
-2. Open `Animo.xcodeproj` in Xcode.
-3. Build and run on your simulator or device.
-
 ## Current Status
 
 - **Development Phase**: Front-end Prototype
