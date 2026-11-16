@@ -17,119 +17,73 @@ struct RunningControl: View {
             EmotionBackgroundView(emotion: emotion)
                 .ignoresSafeArea()
             
-            Color.white
-                .opacity(0.15)
+            AppColor.scrimLightSoft
                 .ignoresSafeArea()
+
+            // Always in 3D while running, with a dot for you: centered on the screen, then lifted a little so
+            // it sits in the open space rather than leaning on the turn directions.
+            Route3DView(emotion: emotion, route: .route1, alwaysIn3D: true, progress: 0.57)
+                .padding(.horizontal, AppSpacing.screenMargin)
+                .offset(y: -70)
+                .allowsHitTesting(false)
             
-            VStack{
-                HStack{
-                    VStack(alignment: .leading) {
-                        Text("Distance")
-                            .textStyle(.label)
-                            .foregroundStyle(AppColor.lightWhiteText)
-                        Text("\(distanceMiles, specifier: "%.2f") mi")
-                            .textStyle(.label)
-                            .foregroundStyle(AppColor.blackText)
-                    }
-                    Spacer()
-                    VStack(alignment: .leading) {
-                        Text("Calories")
-                            .textStyle(.label)
-                            .foregroundStyle(AppColor.lightWhiteText)
-                        Text("\(Int(caloriesAcc)) kcal")
-                            .textStyle(.label)
-                            .foregroundStyle(AppColor.blackText)
-                    }
-                    Spacer()
-                    VStack(alignment: .leading) {
-                        Text("Time Elapsed")
-                            .textStyle(.label)
-                            .foregroundStyle(AppColor.lightWhiteText)
-                        Text(timeString(from: elapsedSeconds))
-                            .textStyle(.label)
-                            .foregroundStyle(AppColor.blackText)
-                    }
-                }
-                
-                RouteGradientRunningView(emotion: emotion)
-                    .frame(maxWidth: .infinity)
-                    .aspectRatio(1, contentMode: .fit)
-                    .layoutPriority(1)
-                    .padding(.vertical, 16)
-                
-                Spacer()
-                VStack(alignment: .leading, spacing: 10) {
-                    Image(systemName: "arrow.turn.up.left")
-                        .font(.system(size: 24, weight: .regular))
-                        .foregroundStyle(emotion.color)
-                        .frame(width: 44, height: 44)
-                        .background(AppColor.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            VStack(spacing: 8) {
+                statsBar
+                    .padding(.horizontal, AppSpacing.screenMargin)
 
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("In \(turnDistanceFeet)ft, turn left")
-                            .textStyle(.display)
-                            .foregroundStyle(AppColor.blackText)
-
-                        Text("Parkway Ave.")
-                            .textStyle(.body)
-                            .foregroundStyle(AppColor.blackText)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                HStack(spacing:6) {
-                    Button {
-                        stopSimulatedRunTimer()
-                        isPaused = false
-                        onEnd()
-                    } label: {
-                        Image(systemName: "xmark")
+                VStack {
+                    Spacer()
+                    VStack(alignment: .leading, spacing: 8) {
+                        Image(systemName: "arrow.turn.up.left")
                             .font(.system(size: 24, weight: .regular))
-                            .foregroundStyle(AppColor.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 142)
-                            .background(AppColor.white.opacity(0.50))
-                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    }
+                            .foregroundStyle(emotion.color)
+                            .frame(width: 44, height: 44)
+                            .background(AppColor.black)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-                    Button {
-                        isPaused.toggle()
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("In \(turnDistanceFeet)ft, turn left")
+                                .textStyle(.display)
+                                .foregroundStyle(AppColor.textPrimary)
 
-                        if isPaused {
-                            stopSimulatedRunTimer()
-                        } else {
-                            startSimulatedRunTimer()
+                            Text("Parkway Ave.")
+                                .textStyle(.body)
+                                .foregroundStyle(AppColor.textPrimary)
                         }
-                    } label: {
-                        Image(systemName: isPaused ? "play.fill" : "pause.fill")
-                            .font(.system(size: 24, weight: .regular))
-                            .foregroundStyle(AppColor.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 142)
-                            .background(AppColor.white.opacity(0.50))
-                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    GlassEffectContainer(spacing: 6) {
+                        HStack(spacing: 6) {
+                            glassControl(systemName: "xmark", label: "End run") {
+                                stopSimulatedRunTimer()
+                                isPaused = false
+                                onEnd()
+                            }
+
+                            glassControl(
+                                systemName: isPaused ? "play.fill" : "pause.fill",
+                                label: isPaused ? "Resume run" : "Pause run"
+                            ) {
+                                isPaused.toggle()
+
+                                if isPaused {
+                                    stopSimulatedRunTimer()
+                                } else {
+                                    startSimulatedRunTimer()
+                                }
+                            }
                             .transaction { txn in
                                 txn.animation = nil
                             }
-                    }
 
-                    Button { } label: {
-                        Image(systemName: "ellipsis")
-                            .font(.system(size: 24, weight: .regular))
-                            .foregroundStyle(AppColor.white)
-                            
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 142)
-                            .background(AppColor.white.opacity(0.50))
-                            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                            glassControl(systemName: "ellipsis", label: "More") { }
+                        }
                     }
+                    .frame(maxWidth: .infinity)
+            
                 }
-                .frame(maxWidth: .infinity)
-                .buttonStyle(.plain)
+                .padding(.horizontal, AppSpacing.screenMargin)
             }
-            .padding(.horizontal, 24)
-            .padding(.top, 24)
-            .padding(.bottom, 0)
             .onAppear {
                 startSimulatedRunTimer()
             }
@@ -138,6 +92,60 @@ struct RunningControl: View {
                 isPaused = false
             }
         }
+    }
+
+    // Figma 456:4839: three equal glass pills (icon + value) that mirror the three control tiles below.
+    private var statsBar: some View {
+        GlassEffectContainer(spacing: 6) {
+            HStack(spacing: 6) {
+                statPill(
+                    systemName: "figure.run",
+                    value: distanceMiles.formatted(.number.precision(.fractionLength(1))),
+                    unit: "mi"
+                )
+                statPill(systemName: "flame.fill", value: "\(Int(caloriesAcc))", unit: "kcal")
+                statPill(systemName: "stopwatch", value: timeString(from: elapsedSeconds), unit: nil)
+            }
+        }
+    }
+
+    private func statPill(systemName: String, value: String, unit: String?) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: systemName)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(AppColor.textPrimary)
+
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text(value)
+                    .textStyle(.button)
+                    // Fixed-width digits so the ticking time and distance don't shift sideways.
+                    .monospacedDigit()
+                    .foregroundStyle(AppColor.textPrimary)
+                if let unit {
+                    Text(unit)
+                        .textStyle(.label)
+                        .foregroundStyle(AppColor.textSecondary)
+                }
+            }
+        }
+        .lineLimit(1)
+        .frame(maxWidth: .infinity)
+        .frame(height: 40)
+        .glassEffect(.regular, in: .capsule)
+    }
+
+    private func glassControl(systemName: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 24, weight: .regular))
+                .foregroundStyle(AppColor.textPrimary)
+                .frame(maxWidth: .infinity)
+                .frame(height: 142)
+                .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        }
+        .buttonStyle(.plain)
+        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 20))
+        .accessibilityLabel(label)
     }
 
     private func timeString(from seconds: Int) -> String {

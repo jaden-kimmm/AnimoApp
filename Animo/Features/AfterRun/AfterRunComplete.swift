@@ -7,142 +7,94 @@
 
 import SwiftUI
 
+/// Figma 476:5243. Glass back + share buttons with "Run Complete" centered, the route filled in the
+/// emotion color, a stats grid, and a Finish button.
 struct AfterRunComplete: View {
     let emotion: Emotion
     let onGoHome: () -> Void
-
-    @State private var page: Int = 0
-
-    private let swipeThreshold: CGFloat = 40
 
     var body: some View {
         ZStack {
             EmotionBackgroundView(emotion: emotion)
                 .ignoresSafeArea()
-            
-            Color.white
-                .opacity(0.55)
+
+            AppColor.scrimLight
                 .ignoresSafeArea()
 
-            VStack(spacing: 16) {
-                HStack {
-                    Image(systemName: "party.popper.fill")
-                        .font(.system(size: 14, weight: .regular))
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    
-                    Text("Run Complete")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Spacer()
-                }
-            
+            VStack(alignment: .leading, spacing: 0) {
+                header
+                    .padding(.bottom, 12)
 
-            
-            HStack{
-                Text("Los Angeles, CA")
-                    .textStyle(.label)
-                    .foregroundStyle(AppColor.blackText)
-                Spacer()
-                
-                
-            }
-            
-            
-            HStack{
                 Text("You found joy!")
                     .textStyle(.display)
-                    .foregroundStyle(emotion.color)
-                Spacer()
-                
-                
-            }
-            
-            
-                
-                RouteFillView(emotion: emotion, route: .route1)
-                
-                    
-            
-            
-            
-            HStack{
-                VStack(alignment: .leading) {
-                    Text("BPM")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("133")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                VStack(alignment: .leading) {
-                    Text("Average Pace")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                        
-                    Text("5.31 / mi")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                
-                
-            }
-            
-            
-            HStack{
-                VStack(alignment: .leading) {
-                    Text("Total Time")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("35:11")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                VStack(alignment: .leading) {
-                    Text("Total Calories")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("621")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                
-                
-            }
-            
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("A Note")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("Your heart rate stabilized and your pace climbed. You're leaving the park better than you entered it.")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                Spacer()
-            }
-            
-            Spacer()
-            
-            
-            
-            PrimaryButton(title: "Finish", style: .black) {
-                onGoHome()
-            }
-            
-            
-            
+                    .foregroundStyle(AppColor.textPrimary)
+                    .lineLimit(1)
 
-            
+                // Always shown in 3D here.
+                Route3DView(emotion: emotion, route: .route1, alwaysIn3D: true)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(.vertical, 16)
+
+                stats
+
+                PrimaryButton(title: "Finish", style: .black) {
+                    onGoHome()
+                }
+                .padding(.top, 16)
             }
-            .padding(24)
+            .padding(.horizontal, AppSpacing.screenMargin)
+            .padding(.bottom, AppSpacing.screenMargin)
+        }
+    }
+
+    // MARK: - Sections
+
+    /// Glass back + share circles with the title centered between them.
+    private var header: some View {
+        ZStack {
+            Text("Run Complete")
+                .textStyle(.body)
+                .foregroundStyle(AppColor.textPrimary)
+
+            HStack {
+                Button {
+                    onGoHome()
+                } label: {
+                    GlassCircleLabel(systemName: "arrow.left")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Back")
+
+                Spacer()
+
+                ShareLink(item: "I just finished my Echo Park Run with Animo.") {
+                    GlassCircleLabel(systemName: "square.and.arrow.up")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Share run")
+            }
+        }
+    }
+
+    private var stats: some View {
+        Grid(alignment: .topLeading, horizontalSpacing: 16, verticalSpacing: 16) {
+            GridRow {
+                InfoCell(icon: "heart", label: "BPM", value: "133")
+                InfoCell(icon: "speedometer", label: "Average Pace", value: "5.31 / mi")
+            }
+            GridRow {
+                InfoCell(icon: "clock", label: "Total Time", value: "35:11")
+                InfoCell(icon: "flame", label: "Total Calories", value: "621")
+            }
+            GridRow {
+                InfoCell(
+                    icon: "note.text",
+                    label: "A Note",
+                    value: "Your heart rate stabilized and your pace climbed. You're leaving the park better than you entered it.",
+                    valueStyle: .label
+                )
+                .gridCellColumns(2)
+            }
         }
     }
 }

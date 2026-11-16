@@ -12,7 +12,7 @@ enum AppRoute {
 
 struct ContentView: View {
     @State private var route: AppRoute = .landing
-    @State private var selectedEmotion: Emotion = .happy
+    @State private var selectedEmotion: Emotion = .stressed
 
     var body: some View {
         switch route {
@@ -40,7 +40,7 @@ struct ContentView: View {
         case .loading:
             LoadingView(emotion: selectedEmotion)
                 .onAppear {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
                         route = .afterHome
                     }
                 }
@@ -104,7 +104,7 @@ struct ContentView: View {
 
 private struct AppPreviewHost: View {
     @State private var route: AppRoute
-    @State private var selectedEmotion: Emotion = .happy
+    @State private var selectedEmotion: Emotion = .stressed
 
     init(startRoute: AppRoute) {
         _route = State(initialValue: startRoute)

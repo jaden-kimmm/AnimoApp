@@ -1,7 +1,7 @@
 {
   "images" : [
     {
-      "filename" : "Frame 115.pdf",
+      "filename" : "TiredPenMap.png",
       "idiom" : "universal"
     }
   ],
@@ -10,7 +10,7 @@
     "version" : 1
   },
   "properties" : {
-    "preserves-vector-representation" : true,
-    "template-rendering-intent" : "template"
+    "compression-type" : "lossless",
+    "template-rendering-intent" : "original"
   }
 }

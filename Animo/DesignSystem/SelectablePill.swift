@@ -1,4 +1,3 @@
-
 import SwiftUI
 
 struct SelectablePill: View {
@@ -10,25 +9,28 @@ struct SelectablePill: View {
     var body: some View {
         Button(action: onTap) {
             ZStack {
-                Capsule()
-                    .fill(AppColor.white)
-
+                // Selected: the photo fills the pill on top of the glass, same as before.
                 if isSelected {
                     Image(imageName)
                         .resizable()
                         .scaledToFill()
                         .frame(height: 50)
+                        .overlay(AppColor.scrimDarkSoft)
                         .clipShape(Capsule())
-
-                    Capsule()
-                        .fill(AppColor.black.opacity(0.15))
+                        .transition(.opacity)
                 }
 
                 Text(title)
-                    .textStyle(.body)
-                    .foregroundStyle(isSelected ? AppColor.white : AppColor.black)
+                    .textStyle(.button)
+                    .foregroundStyle(isSelected ? AppColor.textOnDark : AppColor.textPrimary)
             }
+            .frame(maxWidth: .infinity)
             .frame(height: 50)
+            .contentShape(Capsule())
         }
+        .buttonStyle(.plain)
+        // Default Liquid Glass pill.
+        .glassEffect(.regular.interactive(), in: .capsule)
+        .animation(.easeInOut(duration: 0.35), value: isSelected)
     }
 }

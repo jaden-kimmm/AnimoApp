@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum Emotion: String, CaseIterable {
-    case angry, stressed, anxious, tired, happy
+    case happy, angry, stressed, tired, anxious
 }
 
 struct EmotionBackgroundView: View {

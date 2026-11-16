@@ -16,7 +16,7 @@ struct OnboardingQuestionView: View {
 
             Text(step.question)
                 .textStyle(.headline)
-                .foregroundStyle(AppColor.black)
+                .foregroundStyle(AppColor.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(spacing: 10) {
@@ -40,7 +40,7 @@ struct OnboardingQuestionView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, 24)
-        .padding(.bottom, 24)
+        .padding(.horizontal, AppSpacing.screenMargin)
+        .padding(.bottom, AppSpacing.screenMargin)
     }
 }

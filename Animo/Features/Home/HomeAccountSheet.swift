@@ -6,18 +6,35 @@
 //
 
 import SwiftUI
+import Glur
 
 struct HomeAccountSheet: View {
     @Environment(\.dismiss) private var dismiss
 
-    private enum SheetTab {
-        case latestRuns
-        case settings
+    private enum SheetTab: String, CaseIterable {
+        case latestRuns = "Latest Runs"
+        case settings = "Settings"
     }
 
     @State private var tab: SheetTab = .latestRuns
+    /// The runs pushed on the stack: empty on the list, one entry while a run's detail is open.
+    @State private var path: [RunSummary] = []
 
     var body: some View {
+        // Tapping a run pushes its detail with the standard iOS push (slides in from the right). The detail
+        // blocks every swipe that would leave it, so its back button is the only way out (see RunDetailView).
+        NavigationStack(path: $path) {
+            sheetContent
+                .toolbar(.hidden, for: .navigationBar)
+                .navigationDestination(for: RunSummary.self) { run in
+                    RunDetailView(runs: RunSummary.samples, run: run)
+                }
+        }
+        // While a run is open, the sheet can't be swiped away either.
+        .interactiveDismissDisabled(!path.isEmpty)
+    }
+
+    private var sheetContent: some View {
         VStack(spacing: 0) {
             header
                 .padding(.horizontal, 24)
@@ -39,7 +56,6 @@ struct HomeAccountSheet: View {
 
             Spacer(minLength: 0)
         }
-        .background(AppColor.bg)
     }
 
     private var header: some View {
@@ -53,123 +69,48 @@ struct HomeAccountSheet: View {
             VStack(spacing: 0) {
                 Text("Jaden Kim")
                     .textStyle(.display)
-                    .foregroundStyle(AppColor.black)
+                    .foregroundStyle(AppColor.textPrimary)
                     .multilineTextAlignment(.center)
 
                 Text("Experienced Runner")
                     .textStyle(.body)
-                    .foregroundStyle(AppColor.black)
+                    .foregroundStyle(AppColor.textPrimary)
                     .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity)
     }
 
+    /// The standard segmented control (a glass capsule with a sliding pill on iOS 26).
     private var tabBar: some View {
-        HStack(spacing: 28) {
-            Spacer()
-            tabItem(title: "Latest Runs", tab: .latestRuns)
-            tabItem(title: "Settings", tab: .settings)
-            Spacer()
+        Picker("Section", selection: $tab.animation(.easeInOut(duration: 0.15))) {
+            ForEach(SheetTab.allCases, id: \.self) { tab in
+                Text(tab.rawValue).tag(tab)
+            }
         }
+        .pickerStyle(.segmented)
     }
 
-    private func tabItem(title: String, tab: SheetTab) -> some View {
-        let isSelected = self.tab == tab
-
-        return Button {
-            withAnimation(.easeInOut(duration: 0.15)) {
-                self.tab = tab
-            }
-        } label: {
-            VStack(spacing: 6) {
-                Text(title)
-                    .textStyle(.label)
-                    .foregroundStyle(isSelected ? AppColor.black : AppColor.lightWhiteText)
-
-                Rectangle()
-                    .fill(isSelected ? AppColor.black : Color.clear)
-                    .frame(height: 2)
-            }
-            .fixedSize(horizontal: true, vertical: false)
-        }
-        .buttonStyle(.plain)
-    }
-
-    // Demo: swipeable peek cards (white rounded rectangles)
+    /// Swipeable cards, one per run: the photo and route with the date, place and name. Tap one to open it.
     private var latestRunsContent: some View {
         VStack(spacing: 24) {
             GeometryReader { geo in
-                let availableWidth = geo.size.width
                 let peek: CGFloat = 14            // neighbor peek on EACH side
-                let spacing: CGFloat = 0          // honest spacing BETWEEN cards
                 let overlap: CGFloat = 5          // visual overlap amount (positive number)
-                let cardWidth = availableWidth - (peek * 2)
-                let sideInset: CGFloat = peek     // enough inset so first/last can center
-                let bgNames = ["Arts_District_Run", "Echo_Park_Run", "Griffith_Park_Run", "Santa_Monica_Run", "Silver_Lake_Run"]
-                let locations = ["Los Angeles, CA", "Los Angeles, CA", "Los Angeles, CA", "Santa Monica, CA", "Los Angeles, CA"]
-                let titles = ["Arts District Run", "Echo Park Run", "Griffith Park Run", "Santa Monica Run", "Silver Lake Run"]
-                let bpms = [148, 132, 141, 137, 153]
-                let paces = ["6:12 / mi", "5:58 / mi", "6:05 / mi", "5:44 / mi", "6:22 / mi"]
-                let times = ["29:41", "31:09", "34:02", "28:33", "27:18"]
-                let calories = [540, 505, 612, 498, 560]
-                let routes: [RouteShape] = [.route1, .route2, .route3, .route4, .route5]
-                let emotions: [Emotion] = [.angry, .stressed, .anxious, .tired, .happy]
+                let cardWidth = geo.size.width - (peek * 2)
 
                 ScrollView(.horizontal) {
-                    LazyHStack(spacing: spacing) {
-                        ForEach(0..<bgNames.count, id: \.self) { i in
-                            ZStack {
-                                Image(bgNames[i])
-                                    .resizable()
-                                    .scaledToFill()          // FILL, not FIT
-                                    .frame(width: cardWidth, height: geo.size.height)
-                                    .clipped()
-                                    .overlay {
-                                        Color.black.opacity(0.18)
-                                    }
-
-                                VStack(alignment: .leading, spacing: 0) {
-                                    // Top labels
-                                    VStack(alignment: .leading, spacing: 2) {
-                                        Text(locations[i])
-                                            .textStyle(.label)
-                                            .foregroundColor(AppColor.white)
-                                        Text(titles[i])
-                                            .textStyle(.headline)
-                                            .foregroundColor(AppColor.white)
-                                    }
-
-                                    
-
-                                    RouteGradientView(emotion: emotions[i], route: routes[i])
-
-
-                                    
-
-                                    // Bottom metrics
-                                    VStack(alignment: .leading, spacing: 12) {
-                                        HStack{
-                                            metricBlock(title: "BPM", value: "\(bpms[i])")
-                                            metricBlock(title: "Average Pace", value: paces[i])
-                                        }
-                                        HStack{
-                                            metricBlock(title: "Total Time", value: times[i])
-                                            metricBlock(title: "Total Calories", value: "\(calories[i])")
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal, 42)
-                                .padding(.vertical, 32)
+                    LazyHStack(spacing: 0) {
+                        ForEach(RunSummary.samples) { run in
+                            NavigationLink(value: run) {
+                                runCard(run, width: cardWidth, height: geo.size.height)
                             }
-                            
-                            .clipShape(RoundedRectangle(cornerRadius: 47, style: .continuous))
+                            .buttonStyle(.plain)
                             .scrollTransition(.interactive, axis: .horizontal) { content, phase in
                                 content
                                     .scaleEffect(phase.isIdentity ? 1.0 : 0.95)
                                     .offset(x: phase.isIdentity ? 0 : (-phase.value * overlap))
                                     .opacity(phase.isIdentity ? 1.0 : 0.85)
-                                
                             }
                         }
                     }
@@ -177,10 +118,9 @@ struct HomeAccountSheet: View {
                 }
                 .scrollTargetBehavior(.viewAligned)
                 .scrollIndicators(.hidden)
-                .contentMargins(.horizontal, sideInset, for: .scrollContent)
+                .contentMargins(.horizontal, peek, for: .scrollContent)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            
 
             PrimaryButton(title: "Share", style: .black) {
                 // demo
@@ -189,87 +129,107 @@ struct HomeAccountSheet: View {
         }
     }
 
-    private func metricBlock(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(title)
-                .textStyle(.label)
-                .foregroundColor(AppColor.lightWhiteText)
+    /// Figma 486:6819: month at the top, place and run name at the bottom, the route in between. The photo
+    /// blurs progressively towards the bottom so the name stays readable.
+    private func runCard(_ run: RunSummary, width: CGFloat, height: CGFloat) -> some View {
+        ZStack {
+            Image(run.imageName)
+                .resizable()
+                .scaledToFill()
+                .frame(width: width, height: height)
+                .clipped()
+                .overlay { AppColor.scrimDark }
+                .glur(radius: 16, offset: 0.7, interpolation: 0.3, direction: .down)
 
-            Text(value)
-                .textStyle(.label)
-                .foregroundColor(AppColor.white)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
+            RouteView(emotion: run.emotion, route: run.route, style: .fill)
+                .padding(.horizontal, 42)
+                .padding(.vertical, 96)
+                .frame(width: width, height: height)
 
-    private var settingsContent: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 24) {
+            VStack(alignment: .leading, spacing: 0) {
+                Text(run.month)
+                    .textStyle(.label)
+                    .foregroundStyle(AppColor.textOnDark)
 
-                Text("Account")
-                    .textStyle(.body)
-                    .foregroundStyle(AppColor.black)
-                    .padding(.horizontal, 24)
+                Spacer()
 
-                settingsCard(rows: [
-                    "Email",
-                    "Phone Number",
-                    "Language",
-                    "Name",
-                    "Security"
-                ])
-
-                Text("Personalization")
-                    .textStyle(.body)
-                    .foregroundStyle(AppColor.black)
-                    .padding(.horizontal, 24)
-
-                settingsCard(rows: [
-                    "Voice",
-                    "Distance Priority",
-                    "Time Priority",
-                    "Route Preferences"
-                ])
+                Text(run.location)
+                    .textStyle(.label)
+                    .foregroundStyle(AppColor.textOnDark)
+                Text(run.title)
+                    .textStyle(.headline)
+                    .foregroundStyle(AppColor.textOnDark)
             }
-            .padding(.top, 6)
-            .padding(.bottom, 32)
+            .padding(32)
+            .frame(width: width, height: height, alignment: .topLeading)
         }
+        .frame(width: width, height: height)
+        .clipShape(RoundedRectangle(cornerRadius: 47, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 47, style: .continuous))
     }
 
-    private func settingsCard(rows: [String]) -> some View {
-        VStack(spacing: 0) {
-            ForEach(rows.indices, id: \.self) { i in
-                settingsRow(title: rows[i])
+    private let settingsSections: [(title: String, rows: [(title: String, icon: String)])] = [
+        ("Account", [
+            ("Email", "envelope"),
+            ("Phone Number", "phone"),
+            ("Language", "globe"),
+            ("Name", "person.text.rectangle"),
+            ("Security", "lock")
+        ]),
+        ("Personalization", [
+            ("Voice", "waveform"),
+            ("Distance Priority", "ruler"),
+            ("Time Priority", "clock"),
+            ("Route Preferences", "map")
+        ])
+    ]
 
-                if i != rows.indices.last {
-                    Divider()
-                        .overlay(AppColor.lightWhiteText.opacity(0.22))
-                        .padding(.horizontal, 42)
+    /// Standard grouped `List`: the system supplies the card corners, row heights, insets, separators
+    /// and section-header spacing, so only colors, fonts and the side margin are customized.
+    private var settingsContent: some View {
+        List {
+            ForEach(settingsSections, id: \.title) { section in
+                Section {
+                    ForEach(section.rows, id: \.title) { row in
+                        settingsRow(title: row.title, icon: row.icon)
+                            .listRowBackground(AppColor.white)
+                            .listRowSeparatorTint(AppColor.separator)
+                    }
+                } header: {
+                    Text(section.title)
+                        .textStyle(.label)
+                        .foregroundStyle(AppColor.textSecondary)
+                        .textCase(nil)
                 }
             }
         }
-        .background(AppColor.white)
-        .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
-        .padding(.horizontal, 24)
+        .listStyle(.insetGrouped)
+        .scrollContentBackground(.hidden)
+        .contentMargins(.horizontal, AppSpacing.screenMargin, for: .scrollContent)
     }
 
-    private func settingsRow(title: String) -> some View {
+    private func settingsRow(title: String, icon: String) -> some View {
         Button {
             // TODO: wire destinations
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: 16) {
+                // Fixed width so every title lines up, whatever the symbol's own width.
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(AppColor.textPrimary)
+                    .frame(width: 24)
+
                 Text(title)
-                    .textStyle(.label)
-                    .foregroundStyle(AppColor.black)
+                    .textStyle(.body)
+                    .foregroundStyle(AppColor.textPrimary)
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11))
-                    .foregroundStyle(AppColor.black)
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(AppColor.textSecondary)
             }
-            .padding(.horizontal, 42)
-            .padding(.vertical, 18)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
     }
@@ -283,12 +243,12 @@ private struct HomeAccountSheetPreviewHost: View {
             AppColor.black.opacity(0.05).ignoresSafeArea()
             Text("Home")
                 .textStyle(.headline)
-                .foregroundStyle(AppColor.black)
+                .foregroundStyle(AppColor.textPrimary)
         }
         .sheet(isPresented: $showSheet) {
             HomeAccountSheet()
-                .presentationDetents([.height(790)])
-                .presentationCornerRadius(47)
+                .presentationDetents([.large])
+                .presentationBackground(AppColor.bg)
                 .presentationDragIndicator(.visible)
         }
     }

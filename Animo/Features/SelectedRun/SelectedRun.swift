@@ -1,4 +1,4 @@
-
+ 
 import SwiftUI
 
 struct SelectedRun: View {
@@ -15,183 +15,132 @@ struct SelectedRun: View {
             EmotionBackgroundView(emotion: emotion)
                 .ignoresSafeArea()
             
-            Color.white
-                .opacity(0.55)
+            AppColor.scrimLight
                 .ignoresSafeArea()
 
-            VStack {
-            // Top
+            // Figma 469:4589. Header sits right under the status bar (no top padding).
+            VStack(alignment: .leading, spacing: 0) {
+                header
+                    .padding(.bottom, 12)
+
+                Text("Echo Park Run")
+                    .textStyle(.display)
+                    .foregroundStyle(AppColor.textPrimary)
+                    .padding(.bottom, 12)
+
+                routeImage
+                    .padding(.bottom, 16)
+
+                information
+
+                Spacer(minLength: 16)
+
+                PrimaryButton(title: "Start", style: .black) {
+                    onStart()
+                }
+            }
+            .padding(.horizontal, AppSpacing.screenMargin)
+            .padding(.bottom, AppSpacing.screenMargin)
+        }
+    }
+
+    // MARK: - Sections
+
+    /// Glass back + share circles with the city centered between them.
+    private var header: some View {
+        ZStack {
+            Text("Los Angeles, CA")
+                .textStyle(.label)
+                .foregroundStyle(AppColor.textPrimary)
+
             HStack {
                 Button {
                     onBack()
                 } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: "arrow.left")
-                            .font(.system(size: 14, weight: .regular))
-
-                        Text("back")
-                            .textStyle(.label)
-                    }
-                    .foregroundStyle(AppColor.lightWhiteText)
+                    GlassCircleLabel(systemName: "arrow.left")
                 }
                 .buttonStyle(.plain)
-                
-                Spacer()
-            }
+                .accessibilityLabel("Back")
 
-            Spacer()
-            
-            HStack{
-                Text("Los Angeles, CA")
+                Spacer()
+
+                ShareLink(item: "Echo Park Run, Los Angeles, CA") {
+                    GlassCircleLabel(systemName: "square.and.arrow.up")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Share run")
+            }
+        }
+    }
+
+    private var routeImage: some View {
+        Image("Echo_Park_Run_Bg")
+            .resizable()
+            // Fill the full content width and take whatever height is left; scaledToFit shrank the
+            // image narrower than the 16pt margins once the info grid got taller.
+            .scaledToFill()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .clipped()
+            .overlay(alignment: .topLeading) {
+                Text(page == 0 ? "Route" : "Intensity")
                     .textStyle(.label)
-                    .foregroundStyle(AppColor.blackText)
-                Spacer()
-                
-                
+                    .foregroundStyle(AppColor.textOnDark)
+                    .blurFade(active: true, trigger: page)
+                    .padding(.top, 32)
+                    .padding(.leading, 32)
             }
-            
-            Spacer()
-            
-            HStack{
-                Text("Echo Park Run")
-                    .textStyle(.display)
-                    .foregroundStyle(emotion.color)
-                Spacer()
-                
-                
-            }
-            
-            Spacer()
-            
-            VStack(spacing: 10) {
-                Image("Echo_Park_Run_Bg")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(maxWidth: .infinity)
-                    .overlay(alignment: .topLeading) {
-                        Text(page == 0 ? "Route" : "Intensity")
-                            .textStyle(.label)
-                            .foregroundStyle(AppColor.white)
+            .overlay {
+                ZStack {
+                    if page == 0 {
+                        Route3DView(emotion: emotion, route: .route1)
+                            .padding(24)
                             .blurFade(active: true, trigger: page)
-                            .padding(.top, 32)
-                            .padding(.leading, 32)
+                    } else {
+                        IntensityGraphView(emotion: emotion)
+                            .padding(24)
+                            .blurFade(active: true, trigger: page)
                     }
-                    .overlay {
-                        ZStack {
-                            if page == 0 {
-                                RouteGradientView(emotion: emotion, route: .route1)
-                                    .padding(24)
-                                    .blurFade(active: true, trigger: page)
-                            } else {
-                                IntensityDotsView(emotion: emotion)
-                                    .padding(24)
-                                    .blurFade(active: true, trigger: page)
-                            }
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .overlay(alignment: .bottom) {
+                PageIndicator(total: 2, current: page, glass: true)
+                    .padding(.bottom, 24)
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 10)
+                    .onEnded { value in
+                        if value.translation.width <= -swipeThreshold {
+                            withAnimation(.easeInOut(duration: 0.2)) { page = 1 }
+                        } else if value.translation.width >= swipeThreshold {
+                            withAnimation(.easeInOut(duration: 0.2)) { page = 0 }
                         }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
-                    .overlay(alignment: .bottom) {
-                        PageIndicator(total: 2, current: page)
-                            .padding(.bottom, 24)
-                    }
-                    .contentShape(Rectangle())
-                    .gesture(
-                        DragGesture(minimumDistance: 10)
-                            .onEnded { value in
-                                if value.translation.width <= -swipeThreshold {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        page = 1
-                                    }
-                                } else if value.translation.width >= swipeThreshold {
-                                    withAnimation(.easeInOut(duration: 0.2)) {
-                                        page = 0
-                                    }
-                                }
-                            }
-                    )
-                
-            }
-            
-            Spacer()
-            
-            HStack{
-                VStack(alignment: .leading) {
-                    Text("Weather")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("68°F, Clear")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                VStack(alignment: .leading) {
-                    Text("Surface")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("Pavement")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                
-                
-            }
-            
-            Spacer()
-            
-            HStack{
-                VStack(alignment: .leading) {
-                    Text("Distance")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("3.2 mi")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                VStack(alignment: .leading) {
-                    Text("Duration")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("28 min")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                Spacer()
-                
-                
-            }
-            Spacer()
-            
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("A Note")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.lightWhiteText)
-                    Text("I've kept the pace light today because you're feeling fried. No hills, just a steady rhythm to help you reset.")
-                        .textStyle(.label)
-                        .foregroundStyle(AppColor.blackText)
-                }
-                Spacer()
-            }
-            
-            Spacer()
-            
-            
-            
-            PrimaryButton(title: "Start", style: .black) {
-                onStart()
-            }
-            
-            
+            )
+    }
 
-            
+    /// Run details as a 2-column grid (Figma 476:5159): icon + grey label over a large value, with the
+    /// coach note spanning both columns.
+    private var information: some View {
+        Grid(alignment: .topLeading, horizontalSpacing: 16, verticalSpacing: 16) {
+            GridRow {
+                InfoCell(icon: "sun.max", label: "Weather", value: "68°F, Clear")
+                InfoCell(icon: "road.lanes", label: "Surface", value: "Pavement")
             }
-            .padding(24)
+            GridRow {
+                InfoCell(icon: "figure.run", label: "Distance", value: "3.2 mi")
+                InfoCell(icon: "clock", label: "Duration", value: "28 min")
+            }
+            GridRow {
+                InfoCell(
+                    icon: "note.text",
+                    label: "A Note",
+                    value: "I've kept the pace light today because you're feeling fried. No hills, just a steady rhythm to help.",
+                    valueStyle: .body
+                )
+                .gridCellColumns(2)
+            }
         }
     }
 }
